@@ -28,7 +28,7 @@ import org.I0Itec.zkclient.exception.ZkInterruptedException;
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.server.NIOServerCnxn;
 import org.apache.zookeeper.server.ZooKeeperServer;
-import org.apache.zookeeper.server.NIOServerCnxn.Factory;
+import org.apache.zookeeper.server.NIOServerCnxnFactory;
 
 public class ZkServer {
 
@@ -43,7 +43,7 @@ public class ZkServer {
     private IDefaultNameSpace _defaultNameSpace;
 
     private ZooKeeperServer _zk;
-    private Factory _nioFactory;
+    private NIOServerCnxnFactory _nioFactory;
     private ZkClient _zkClient;
     private int _port;
     private int _tickTime;
@@ -125,7 +125,8 @@ public class ZkServer {
     private void startSingleZkServer(final int tickTime, final File dataDir, final File dataLogDir, final int port) {
         try {
             _zk = new ZooKeeperServer(dataDir, dataLogDir, tickTime);
-            _nioFactory = new NIOServerCnxn.Factory(new InetSocketAddress(port));
+            _nioFactory = new NIOServerCnxnFactory();
+            _nioFactory.configure(new InetSocketAddress(port), 10);
             _nioFactory.startup(_zk);
         } catch (IOException e) {
             throw new ZkException("Unable to start single ZooKeeper server.", e);
