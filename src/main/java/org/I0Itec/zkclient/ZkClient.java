@@ -62,7 +62,7 @@ public class ZkClient implements Watcher {
     private final Set<IZkStateListener> _stateListener = new CopyOnWriteArraySet<IZkStateListener>();
     private KeeperState _currentState;
     private final ZkLock _zkEventLock = new ZkLock();
-    private boolean _shutdownTriggered;
+    private volatile boolean _shutdownTriggered;
     private ZkEventThread _eventThread;
     // TODO PVo remove this later
     private Thread _zookeeperEventThread;
@@ -671,6 +671,7 @@ public class ZkClient implements Watcher {
             throw new IllegalArgumentException("Must not be done in the zookeeper event thread.");
         }
         while (true) {
+          if (_shutdownTriggered) throw new ZkInterruptedException(new InterruptedException());
             try {
                 return callable.call();
             } catch (ConnectionLossException e) {
